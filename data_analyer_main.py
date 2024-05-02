@@ -3,6 +3,7 @@ from markdown_pdf import MarkdownPdf, Section
 from google.colab import userdata
 from datetime import datetime
 import argparse
+import uuid
 import pandas as pd
 import os
 import sys
@@ -35,7 +36,7 @@ safety_settings = [
 ]
 
 now = datetime.now()
-actual_date = now.strftime("%Y-%m-%dT%H:%M:%S")
+actual_date = now.strftime("%Y-%m-%d - %H:%M:%S")
 
 ##############################################################
 # Check file type
@@ -70,7 +71,6 @@ def check_file_type(file_name):
         else:
             raise ValueError(f"File type {file_name} not supported")
     
-    df = check_file_type(file_name)
     df = df.dropna()  # delete row files with NaN values
     
     # Format float values to 2 decimal places:
@@ -103,11 +103,14 @@ def generate_pdf(file_name, text_md):
     pdf.add_section(Section(text_md, toc=False))
     
     # Set the title of the PDF
-    pdf.meta["title"] = "User Guide"
+    pdf.meta["title"] = f"Analysis of {file_name}"
     
-    file_pdf = f"data-analysis-{actual_date}.pdf"
+    id4 = uuid.uuid4()
+    file_pdf = f"data-analysis-{id4}.pdf"
     # Save the PDF file
     pdf.save(file_pdf)
+    
+    return file_pdf
 
 
 ##############################################################
@@ -136,17 +139,15 @@ def explain_file(file_name, google_api_key):
     prompt = "Explains this CSV file and all its columns. Indicates the potential uses of this data and which columns could cause problems. Do not show the results in any table."
     response = model.generate_content([prompt, csv_data])
     
-    text_md = f"""<div style="text-align: right"> {actual_date} </div>
-<div style="font-style: italic"> {file_name} </div>
-
-__________
-
-    """
-    text_md = text_md + response.text
+    text_md = f'<div style="text-align: right"> {actual_date} </div><br>'
+    text_md += f'<div style="font-style: italic"> {file_name} </div>\n\n'
+    text_md += '__________'
+    text_md += '\n\n'
+    text_md = text_md + " " + response.text.replace("CSV", "")
     
     prompt = "Discuss the pros and cons of different data visualization techniques for data analysis of this csv file in Python. Select only the ones you think are relevant."
     response = model.generate_content([prompt, csv_data])
-    text_md = text_md + "\n" + response.text
+    text_md = text_md + "\n" + response.text.replace("CSV", "")
     
     return text_md
 
@@ -168,7 +169,7 @@ def data_analyzer(file_name, google_api_key):
     # Check the file type
     print("Analyzing the format of the file...")
     check_file_type(file_name)
-    prrint("File type analyzed successfully.")
+    print("File type analyzed successfully.")
     
     # Analyze the file
     print("Analyzing the data of the file. This may take a few minutes...")
@@ -176,7 +177,6 @@ def data_analyzer(file_name, google_api_key):
     print("File data analyzed successfully.")
     
     # Generate the report
-    
     print("Generating the report...")
     file_report = generate_pdf(file_name, text_md)
     
