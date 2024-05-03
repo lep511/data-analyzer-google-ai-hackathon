@@ -162,7 +162,7 @@ def explain_file(file_name, google_api_key):
     prompt = "Discuss the pros and cons of different data visualization techniques for data analysis of this csv file in Python. Select only the ones you think are relevant."
     
     try:
-        print("Generating data visualization techniques for data analysis of this file...")
+        print("  - Generating data visualization techniques for data analysis of this file...")
         response = model.generate_content([prompt, csv_data])
         text_md = text_md + "\n" + response.text.replace("CSV", "")
     except:
@@ -172,7 +172,7 @@ def explain_file(file_name, google_api_key):
     prompt = "Explain how to optimize missing data, outliers, and duplicate data in pandas using best coding practices."
     
     try:
-        print("Generating data optimization report in pandas...")
+        print("  - Generating data optimization report in pandas...")
         response = model.generate_content([prompt, csv_data])
         text_md = text_md + "\n" + response.text.replace("CSV", "")
     except:
@@ -211,12 +211,10 @@ def data_analyzer(file_name, google_api_key):
     file_report = generate_pdf(file_name, text_md)
     
     print("Report generated successfully.")
-    print(f"Report {file_report} saved in the current directory.")
+    print(f"\nReport {file_report} saved in the current directory.")
     
   
-
-
-if __name__ == "__main__":
+  if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Analyze the data of a file with the help of AIa')
     parser.add_argument('--file_name', type=str, help='Name of the file to be converted', required=True)
     parser.add_argument('--api_key', type=str, help='Gemini API key', required=True)
