@@ -2,6 +2,7 @@ import google.generativeai as genai
 from markdown_pdf import MarkdownPdf, Section
 from google.colab import userdata
 from datetime import datetime
+import time
 import argparse
 import uuid
 import pandas as pd
@@ -137,17 +138,46 @@ def explain_file(file_name, google_api_key):
     )
     
     prompt = "Explains this CSV file and all its columns. Indicates the potential uses of this data and which columns could cause problems. Do not show the results in any table."
-    response = model.generate_content([prompt, csv_data])
+    response_try = 3
     
+    while response_try != 0:
+        try:
+            response = model.generate_content([prompt, csv_data])
+            break
+        except:
+            response_try -= 1
+            print("Error: The model is not working properly. Retrying the connection...")
+            time.sleep(5)
+    
+    if response_try == 0:
+        raise Exception("The model is not working properly. Try again later.")
+
+    file_name_formatted = file_name.split("/")[0]
     text_md = f'<div style="text-align: right"> {actual_date} </div><br>'
-    text_md += f'<div style="font-style: italic"> {file_name} </div>\n\n'
+    text_md += f'<div style="font-style: italic"> {file_name_formatted} </div>\n\n'
     text_md += '__________'
     text_md += '\n\n'
     text_md = text_md + " " + response.text.replace("CSV", "")
     
     prompt = "Discuss the pros and cons of different data visualization techniques for data analysis of this csv file in Python. Select only the ones you think are relevant."
-    response = model.generate_content([prompt, csv_data])
-    text_md = text_md + "\n" + response.text.replace("CSV", "")
+    
+    try:
+        print("Generating data visualization techniques for data analysis of this file...")
+        response = model.generate_content([prompt, csv_data])
+        text_md = text_md + "\n" + response.text.replace("CSV", "")
+    except:
+        print("Error: The model is not working properly. A part of the report could not be created.")
+        print("Missing part: Data visualization techniques for data analysis of this file.")
+        
+    prompt = "Explain how to optimize missing data, outliers, and duplicate data in pandas using best coding practices."
+    
+    try:
+        print("Generating data optimization report in pandas...")
+        response = model.generate_content([prompt, csv_data])
+        text_md = text_md + "\n" + response.text.replace("CSV", "")
+    except:
+        print("Error: The model is not working properly. A part of the report could not be created.")
+        print("Missing part: Optimize missing data analysis performance in pandas.")
     
     return text_md
 
