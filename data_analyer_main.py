@@ -212,17 +212,16 @@ def data_analyzer(file_name, google_api_key):
     
     print("Report generated successfully.")
     print(f"\nReport {file_report} saved in the current directory.")
-    
-  
-  if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Analyze the data of a file with the help of AIa')
-    parser.add_argument('--file_name', type=str, help='Name of the file to be converted', required=True)
-    parser.add_argument('--api_key', type=str, help='Gemini API key', required=True)
-    args = parser.parse_args()
 
-    data_analyzer(args.file_name, args.google_api_key)
+
+if __name__ == "__main__":
+  parser = argparse.ArgumentParser(description='Analyze the data of a file with the help of AIa')
+  parser.add_argument('--file_name', type=str, help='Name of the file to be converted', required=True)
+  parser.add_argument('--api_key', type=str, help='Gemini API key', required=True)
+  args = parser.parse_args()
+
+  data_analyzer(args.file_name, args.google_api_key)
     
-    model = genai.GenerativeModel(model_name="gemini-1.5-pro-latest",
+  model = genai.GenerativeModel(model_name="gemini-1.5-pro-latest",
                               generation_config=generation_config,
-                              safety_settings=safety_settings
-)
+                              safety_settings=safety_settings)
